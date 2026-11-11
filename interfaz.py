@@ -24,7 +24,7 @@ class AplicacionClientes:
         self.COLOR_TEXTO = "#1E293B"
 
         self.crear_interfaz()
-        self.cargar_clientes()
+        self.mostrar_inicio()
 
     def crear_interfaz(self):
 
@@ -56,38 +56,103 @@ class AplicacionClientes:
         ).pack(pady=(0, 40))
 
         # Opciones del menu
-        opciones = ["Inicio", "Clientes", "Acerca de"]
+        tk.Button(
+            menu,
+            text="    Inicio",
+            font=("Arial", 11),
+            bg=self.COLOR_MENU,
+            fg="white",
+            activebackground="#334155",
+            activeforeground="white",
+            relief="flat",
+            anchor="w",
+            padx=20,
+            pady=14,
+            cursor="hand2",
+            command=self.mostrar_inicio
+        ).pack(fill="x", padx=10, pady=3)
 
-        for opcion in opciones:
+        tk.Button(
+            menu,
+            text="    Clientes",
+            font=("Arial", 11),
+            bg=self.COLOR_MENU,
+            fg="white",
+            activebackground="#334155",
+            activeforeground="white",
+            relief="flat",
+            anchor="w",
+            padx=20,
+            pady=14,
+            cursor="hand2",
+            command=self.mostrar_clientes
+        ).pack(fill="x", padx=10, pady=3)
 
-            boton = tk.Button(
-                menu,
-                text="    " + opcion,
-                font=("Arial", 11),
-                bg=self.COLOR_MENU,
-                fg="white",
-                activebackground="#334155",
-                activeforeground="white",
-                relief="flat",
-                anchor="w",
-                padx=20,
-                pady=14,
-                cursor="hand2"
-            )
-
-            boton.pack(fill="x", padx=10, pady=3)
+        tk.Button(
+            menu,
+            text="    Acerca de",
+            font=("Arial", 11),
+            bg=self.COLOR_MENU,
+            fg="white",
+            activebackground="#334155",
+            activeforeground="white",
+            relief="flat",
+            anchor="w",
+            padx=20,
+            pady=14,
+            cursor="hand2",
+            command=self.mostrar_acerca_de
+        ).pack(fill="x", padx=10, pady=3)
 
         # Area principal
-        contenido = tk.Frame(
+        self.contenido = tk.Frame(
             self.ventana,
             bg=self.COLOR_FONDO
         )
 
-        contenido.pack(side="left", fill="both", expand=True)
+        self.contenido.pack(
+            side="left",
+            fill="both",
+            expand=True
+        )
 
-        # Encabezado
+        # Estilo de la tabla
+        estilo = ttk.Style()
+        estilo.theme_use("clam")
+
+        estilo.configure(
+            "Treeview",
+            background="white",
+            foreground=self.COLOR_TEXTO,
+            rowheight=35,
+            fieldbackground="white",
+            font=("Arial", 10)
+        )
+
+        estilo.configure(
+            "Treeview.Heading",
+            background="#E2E8F0",
+            foreground=self.COLOR_TEXTO,
+            font=("Arial", 10, "bold")
+        )
+
+        estilo.map(
+            "Treeview",
+            background=[("selected", self.COLOR_AZUL)],
+            foreground=[("selected", "white")]
+        )
+
+    # Elimina el contenido de la pantalla actual
+    def limpiar_contenido(self):
+
+        for elemento in self.contenido.winfo_children():
+            elemento.destroy()
+
+    # Crea el encabezado de cada pantalla
+    def crear_encabezado(self, titulo):
+
         encabezado = tk.Frame(
-            contenido,
+            self.contenido,
             bg=self.COLOR_BLANCO,
             height=75
         )
@@ -97,15 +162,65 @@ class AplicacionClientes:
 
         tk.Label(
             encabezado,
-            text="Administración de clientes",
+            text=titulo,
             font=("Arial", 19, "bold"),
             bg=self.COLOR_BLANCO,
             fg=self.COLOR_TEXTO
         ).pack(side="left", padx=30, pady=20)
 
-        # Panel central
+    # Pantalla de inicio
+    def mostrar_inicio(self):
+
+        self.limpiar_contenido()
+        self.crear_encabezado("Inicio")
+
         panel = tk.Frame(
-            contenido,
+            self.contenido,
+            bg=self.COLOR_FONDO
+        )
+
+        panel.pack(
+            fill="both",
+            expand=True,
+            padx=30,
+            pady=40
+        )
+
+        tk.Label(
+            panel,
+            text="¡Bienvenido a Northwind!",
+            font=("Arial", 23, "bold"),
+            bg=self.COLOR_FONDO,
+            fg=self.COLOR_TEXTO
+        ).pack(anchor="w", pady=(20, 10))
+
+        tk.Label(
+            panel,
+            text="Sistema de gestión de clientes",
+            font=("Arial", 13),
+            bg=self.COLOR_FONDO,
+            fg="#64748B"
+        ).pack(anchor="w")
+
+        tk.Label(
+            panel,
+            text="Desde el menú lateral podés acceder al módulo de clientes "
+                 "y administrar su información.",
+            font=("Arial", 11),
+            bg=self.COLOR_FONDO,
+            fg=self.COLOR_TEXTO,
+            wraplength=650,
+            justify="left"
+        ).pack(anchor="w", pady=(25, 0))
+
+    # Pantalla de clientes
+    def mostrar_clientes(self):
+
+        self.limpiar_contenido()
+        self.crear_encabezado("Administración de clientes")
+
+        panel = tk.Frame(
+            self.contenido,
             bg=self.COLOR_FONDO
         )
 
@@ -275,33 +390,83 @@ class AplicacionClientes:
             fill="x"
         )
 
-        # Estilo de la tabla
-        estilo = ttk.Style()
+        # Cargar clientes desde PostgreSQL
+        self.cargar_clientes()
 
-        estilo.theme_use("clam")
+    # Pantalla acerca de
+    def mostrar_acerca_de(self):
 
-        estilo.configure(
-            "Treeview",
-            background="white",
-            foreground=self.COLOR_TEXTO,
-            rowheight=35,
-            fieldbackground="white",
-            font=("Arial", 10)
+        self.limpiar_contenido()
+        self.crear_encabezado("Acerca de")
+
+        panel = tk.Frame(
+            self.contenido,
+            bg=self.COLOR_FONDO
         )
 
-        estilo.configure(
-            "Treeview.Heading",
-            background="#E2E8F0",
-            foreground=self.COLOR_TEXTO,
-            font=("Arial", 10, "bold")
+        panel.pack(
+            fill="both",
+            expand=True,
+            padx=30,
+            pady=40
         )
 
-        estilo.map(
-            "Treeview",
-            background=[("selected", self.COLOR_AZUL)],
-            foreground=[("selected", "white")]
-        )
+        tk.Label(
+            panel,
+            text="Northwind - Gestión de Clientes",
+            font=("Arial", 19, "bold"),
+            bg=self.COLOR_FONDO,
+            fg=self.COLOR_TEXTO
+        ).pack(anchor="w", pady=(10, 20))
 
+        tk.Label(
+            panel,
+            text="Sistema de administración de clientes desarrollado "
+                 "como trabajo práctico integrador.",
+            font=("Arial", 11),
+            bg=self.COLOR_FONDO,
+            fg="#64748B",
+            wraplength=650,
+            justify="left"
+        ).pack(anchor="w", pady=5)
+
+        
+        tk.Label(
+                    panel,
+                    text="Tecnologías utilizadas:",
+                    font=("Arial", 12, "bold"),
+                    bg=self.COLOR_FONDO,
+                    fg=self.COLOR_TEXTO
+                ).pack(anchor="w", pady=(25, 10))
+        
+        tk.Label(
+                    panel,
+                    text="• Python\n• Tkinter\n• PostgreSQL",
+                    font=("Arial", 11),
+                    bg=self.COLOR_FONDO,
+                    fg=self.COLOR_TEXTO,
+                    justify="left"
+                ).pack(anchor="w")
+
+        tk.Label(
+                    panel,
+                    text="Desarrollado por:",
+                    font=("Arial", 12, "bold"),
+                    bg=self.COLOR_FONDO,
+                    fg=self.COLOR_TEXTO
+                ).pack(anchor="w", pady=(25, 10))
+        
+        tk.Label(
+                    panel,
+                    text="• Samuel\n• Daniela\n• Joaquín\n• Belén",
+                    font=("Arial", 11),
+                    bg=self.COLOR_FONDO,
+                    fg=self.COLOR_TEXTO,
+                    justify="left"
+                ).pack(anchor="w")
+
+
+    # Cargar clientes
     def cargar_clientes(self):
 
         self.tabla.delete(*self.tabla.get_children())
@@ -323,6 +488,7 @@ class AplicacionClientes:
                 values=cliente
             )
 
+    # Buscar clientes
     def buscar_clientes(self):
 
         filtro = self.buscador.get().strip()
@@ -345,9 +511,10 @@ class AplicacionClientes:
                 values=cliente
             )
 
+    # Nuevo cliente
     def nuevo_cliente(self):
 
         messagebox.showinfo(
             "Nuevo cliente",
-            "Esto falta implementar."
+            "El formulario de alta se implementará próximamente."
         )
