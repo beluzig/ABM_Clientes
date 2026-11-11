@@ -2,7 +2,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-from clientes import obtener_clientes
+from clientes import obtener_clientes, insertar_cliente
 
 
 class AplicacionClientes:
@@ -512,9 +512,195 @@ class AplicacionClientes:
             )
 
     # Nuevo cliente
+    
     def nuevo_cliente(self):
 
-        messagebox.showinfo(
-            "Nuevo cliente",
-            "El formulario de alta se implementará próximamente."
+        # Crear ventana del formulario
+        formulario = tk.Toplevel(self.ventana)
+        formulario.title("Nuevo cliente")
+        formulario.geometry("500x650")
+        formulario.resizable(False, False)
+        formulario.configure(bg=self.COLOR_FONDO)
+
+        # Mantener el formulario delante de la ventana principal
+        formulario.transient(self.ventana)
+        formulario.grab_set()
+
+        tk.Label(
+            formulario,
+            text="Registrar nuevo cliente",
+            font=("Arial", 18, "bold"),
+            bg=self.COLOR_FONDO,
+            fg=self.COLOR_TEXTO
+        ).pack(pady=(20, 5))
+
+        tk.Label(
+            formulario,
+            text="Completá los datos del cliente",
+            font=("Arial", 10),
+            bg=self.COLOR_FONDO,
+            fg="#64748B"
+        ).pack(pady=(0, 15))
+
+        # Campos del formulario
+        campos = [
+            ("ID del cliente", "customerid"),
+            ("Empresa", "companyname"),
+            ("Nombre del contacto", "contactname"),
+            ("Cargo", "contacttitle"),
+            ("Dirección", "address"),
+            ("Ciudad", "city"),
+            ("Región", "region"),
+            ("Código postal", "postalcode"),
+            ("País", "country"),
+            ("Teléfono", "phone"),
+            ("Fax", "fax")
+        ]
+
+        entradas = {}
+
+        contenedor = tk.Frame(
+            formulario,
+            bg=self.COLOR_FONDO
         )
+
+        contenedor.pack(
+            fill="both",
+            expand=True,
+            padx=35,
+            pady=5
+        )
+
+        for etiqueta, nombre in campos:
+
+            fila = tk.Frame(
+                contenedor,
+                bg=self.COLOR_FONDO
+            )
+
+            fila.pack(fill="x", pady=4)
+
+            tk.Label(
+                fila,
+                text=etiqueta,
+                font=("Arial", 10),
+                bg=self.COLOR_FONDO,
+                fg=self.COLOR_TEXTO,
+                width=20,
+                anchor="w"
+            ).pack(side="left")
+
+            entrada = tk.Entry(
+                fila,
+                font=("Arial", 10),
+                width=28
+            )
+
+            entrada.pack(
+                side="right",
+                ipady=4
+            )
+
+            entradas[nombre] = entrada
+
+        # Guardar cliente
+        def guardar():
+
+            datos = []
+
+            for etiqueta, nombre in campos:
+                valor = entradas[nombre].get().strip()
+                datos.append(valor)
+
+            # Validar campos obligatorios
+            if datos[0] == "":
+                messagebox.showwarning(
+                    "Validación",
+                    "El ID del cliente es obligatorio.",
+                    parent=formulario
+                )
+                entradas["customerid"].focus()
+                return
+
+            if datos[1] == "":
+                messagebox.showwarning(
+                    "Validación",
+                    "El nombre de la empresa es obligatorio.",
+                    parent=formulario
+                )
+                entradas["companyname"].focus()
+                return
+
+            # Validar longitud del ID
+            if len(datos[0]) > 5:
+                messagebox.showwarning(
+                    "Validación",
+                    "El ID no puede superar los 5 caracteres.",
+                    parent=formulario
+                )
+                entradas["customerid"].focus()
+                return
+
+            datos[0] = datos[0].upper()
+
+            # Insertar en PostgreSQL
+            resultado, error = insertar_cliente(tuple(datos))
+
+            if resultado:
+
+                messagebox.showinfo(
+                    "Alta exitosa",
+                    "El cliente se registró correctamente.",
+                    parent=formulario
+                )
+
+                formulario.destroy()
+
+                # Actualizar la tabla
+                self.buscador.delete(0, tk.END)
+                self.cargar_clientes()
+
+            else:
+
+                messagebox.showerror(
+                    "Error al registrar",
+                    "No se pudo guardar el cliente.\n\n" + error,
+                    parent=formulario
+                )
+
+        # Botones
+        botones = tk.Frame(
+            formulario,
+            bg=self.COLOR_FONDO
+        )
+
+        botones.pack(pady=15)
+
+        tk.Button(
+            botones,
+            text="Guardar",
+            bg="#16A34A",
+            fg="white",
+            font=("Arial", 10, "bold"),
+            relief="flat",
+            padx=25,
+            pady=9,
+            cursor="hand2",
+            command=guardar
+        ).pack(side="left", padx=10)
+
+        tk.Button(
+            botones,
+            text="Cancelar",
+            bg="#64748B",
+            fg="white",
+            font=("Arial", 10, "bold"),
+            relief="flat",
+            padx=25,
+            pady=9,
+            cursor="hand2",
+            command=formulario.destroy
+        ).pack(side="left", padx=10)
+
+        entradas["customerid"].focus()
+

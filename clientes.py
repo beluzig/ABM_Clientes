@@ -59,3 +59,48 @@ def obtener_clientes(filtro=""):
 
     finally:
         conexion.close()
+
+
+def insertar_cliente(datos):
+
+    conexion = crear_conexion()
+
+    if conexion is None:
+        return False, "No se pudo conectar con PostgreSQL."
+
+    try:
+        cursor = conexion.cursor()
+
+        consulta = """
+            INSERT INTO customers (
+                customerid,
+                companyname,
+                contactname,
+                contacttitle,
+                address,
+                city,
+                region,
+                postalcode,
+                country,
+                phone,
+                fax
+            )
+            VALUES (%s, %s, %s, %s, %s, %s,
+                    %s, %s, %s, %s, %s)
+        """
+
+        cursor.execute(consulta, datos)
+
+        conexion.commit()
+
+        cursor.close()
+
+        return True, None
+
+    except Exception as error:
+        conexion.rollback()
+        print("Error al insertar cliente:", error)
+        return False, str(error)
+
+    finally:
+        conexion.close()
