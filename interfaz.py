@@ -1,8 +1,12 @@
-
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-from clientes import obtener_clientes, insertar_cliente
+from clientes import (
+    obtener_clientes,
+    insertar_cliente,
+    actualizar_cliente,
+    eliminar_cliente
+)
 
 
 class AplicacionClientes:
@@ -292,6 +296,36 @@ class AplicacionClientes:
         )
 
         boton_nuevo.pack(side="right")
+
+        boton_editar = tk.Button(
+            barra,
+            text="Editar seleccionado",
+            bg="#D97706",
+            fg="white",
+            font=("Arial", 10, "bold"),
+            relief="flat",
+            padx=15,
+            pady=8,
+            cursor="hand2",
+            command=self.editar_cliente
+        )
+
+        boton_editar.pack(side="right", padx=10)   
+
+        boton_eliminar = tk.Button(
+            barra,
+            text="Eliminar seleccionado",
+            bg="#DC2626",
+            fg="white",
+            font=("Arial", 10, "bold"),
+            relief="flat",
+            padx=15,
+            pady=8,
+            cursor="hand2",
+            command=self.eliminar_cliente
+        )
+
+        boton_eliminar.pack(side="right", padx=10)
 
         # Tabla de clientes
         columnas = (
@@ -704,3 +738,233 @@ class AplicacionClientes:
 
         entradas["customerid"].focus()
 
+        # Modificar cliente
+    def editar_cliente(self):
+
+        seleccionado = self.tabla.selection()
+
+        if not seleccionado:
+            messagebox.showwarning(
+                "Seleccionar cliente",
+                "Primero seleccioná un cliente de la tabla."
+            )
+            return
+
+        # Obtener los datos de la fila seleccionada
+        elemento = self.tabla.item(seleccionado[0])
+        valores = elemento["values"]
+
+        customerid = valores[0]
+
+        formulario = tk.Toplevel(self.ventana)
+        formulario.title("Modificar cliente")
+        formulario.geometry("500x620")
+        formulario.resizable(False, False)
+        formulario.configure(bg=self.COLOR_FONDO)
+
+        formulario.transient(self.ventana)
+        formulario.grab_set()
+
+        tk.Label(
+            formulario,
+            text="Modificar cliente",
+            font=("Arial", 18, "bold"),
+            bg=self.COLOR_FONDO,
+            fg=self.COLOR_TEXTO
+        ).pack(pady=(20, 5))
+
+        tk.Label(
+            formulario,
+            text="ID del cliente: " + str(customerid),
+            font=("Arial", 10, "bold"),
+            bg=self.COLOR_FONDO,
+            fg=self.COLOR_TEXTO
+        ).pack(pady=(0, 15))
+
+        campos = [
+            ("Empresa", "companyname"),
+            ("Nombre del contacto", "contactname"),
+            ("Cargo", "contacttitle"),
+            ("Dirección", "address"),
+            ("Ciudad", "city"),
+            ("Región", "region"),
+            ("Código postal", "postalcode"),
+            ("País", "country"),
+            ("Teléfono", "phone"),
+            ("Fax", "fax")
+        ]
+
+        entradas = {}
+
+        contenedor = tk.Frame(
+            formulario,
+            bg=self.COLOR_FONDO
+        )
+
+        contenedor.pack(
+            fill="both",
+            expand=True,
+            padx=35,
+            pady=5
+        )
+
+        # Crear los campos y completar con los datos actuales
+        for i in range(len(campos)):
+
+            etiqueta, nombre = campos[i]
+
+            fila = tk.Frame(
+                contenedor,
+                bg=self.COLOR_FONDO
+            )
+
+            fila.pack(fill="x", pady=4)
+
+            tk.Label(
+                fila,
+                text=etiqueta,
+                font=("Arial", 10),
+                bg=self.COLOR_FONDO,
+                fg=self.COLOR_TEXTO,
+                width=20,
+                anchor="w"
+            ).pack(side="left")
+
+            entrada = tk.Entry(
+                fila,
+                font=("Arial", 10),
+                width=28
+            )
+
+            entrada.pack(side="right", ipady=4)
+
+            entrada.insert(0, valores[i + 1])
+
+            entradas[nombre] = entrada
+
+        # Guardar modificaciones
+        def guardar():
+
+            datos = []
+
+            for etiqueta, nombre in campos:
+                valor = entradas[nombre].get().strip()
+                datos.append(valor)
+
+            if datos[0] == "":
+                messagebox.showwarning(
+                    "Validación",
+                    "El nombre de la empresa es obligatorio.",
+                    parent=formulario
+                )
+                entradas["companyname"].focus()
+                return
+
+            resultado, error = actualizar_cliente(
+                tuple(datos),
+                customerid
+            )
+
+            if resultado:
+
+                messagebox.showinfo(
+                    "Modificación exitosa",
+                    "Los datos del cliente se actualizaron correctamente.",
+                    parent=formulario
+                )
+
+                formulario.destroy()
+
+                self.buscador.delete(0, tk.END)
+                self.cargar_clientes()
+
+            else:
+
+                messagebox.showerror(
+                    "Error al modificar",
+                    "No se pudo actualizar el cliente.\n\n" + error,
+                    parent=formulario
+                )
+
+        # Botones
+        botones = tk.Frame(
+            formulario,
+            bg=self.COLOR_FONDO
+        )
+
+        botones.pack(pady=15)
+
+        tk.Button(
+            botones,
+            text="Guardar cambios",
+            bg="#16A34A",
+            fg="white",
+            font=("Arial", 10, "bold"),
+            relief="flat",
+            padx=20,
+            pady=9,
+            cursor="hand2",
+            command=guardar
+        ).pack(side="left", padx=10)
+
+        tk.Button(
+            botones,
+            text="Cancelar",
+            bg="#64748B",
+            fg="white",
+            font=("Arial", 10, "bold"),
+            relief="flat",
+            padx=25,
+            pady=9,
+            cursor="hand2",
+            command=formulario.destroy
+        ).pack(side="left", padx=10)
+
+        entradas["companyname"].focus()
+
+        # Eliminar cliente
+    def eliminar_cliente(self):
+
+        seleccionado = self.tabla.selection()
+
+        if not seleccionado:
+            messagebox.showwarning(
+                "Seleccionar cliente",
+                "Primero seleccioná un cliente de la tabla."
+            )
+            return
+
+        elemento = self.tabla.item(seleccionado[0])
+        valores = elemento["values"]
+
+        customerid = valores[0]
+        empresa = valores[1]
+
+        confirmar = messagebox.askyesno(
+            "Confirmar eliminación",
+            "¿Estás seguro de que querés eliminar este cliente?\n\n"
+            "ID: " + str(customerid) + "\n"
+            "Empresa: " + str(empresa),
+            icon="warning"
+        )
+
+        if not confirmar:
+            return
+
+        resultado, error = eliminar_cliente(customerid)
+
+        if resultado:
+
+            messagebox.showinfo(
+                "Eliminación exitosa",
+                "El cliente fue eliminado correctamente."
+            )
+
+            self.cargar_clientes()
+
+        else:
+
+            messagebox.showerror(
+                "No se pudo eliminar",
+                error
+            ) 
