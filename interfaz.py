@@ -16,7 +16,7 @@ class AplicacionClientes:
         self.ventana = ventana
 
         self.ventana.title("Northwind - Gestión de Clientes")
-        self.ventana.geometry("1100x650")
+        self.ventana.state("zoomed") # abre pantalla completa
         self.ventana.minsize(900, 550)
         self.ventana.configure(bg="#F4F6FA")
 
