@@ -1,5 +1,9 @@
 import tkinter as tk
+import ordenes
+
 from tkinter import ttk, messagebox
+
+from ordenes import obtener_ordenes
 
 from clientes import (
     obtener_clientes,
@@ -92,6 +96,22 @@ class AplicacionClientes:
             command=self.mostrar_clientes
         ).pack(fill="x", padx=10, pady=3)
 
+        tk.Button(
+            menu,
+            text="    Órdenes",
+            font=("Arial", 11),
+            bg=self.COLOR_MENU,
+            fg="white",
+            activebackground="#334155",
+            activeforeground="white",
+            relief="flat",
+            anchor="w",
+            padx=20,
+            pady=14,
+            cursor="hand2",
+            command=self.mostrar_ordenes
+        ).pack(fill="x", padx=10, pady=3)
+        
         tk.Button(
             menu,
             text="    Acerca de",
@@ -427,6 +447,322 @@ class AplicacionClientes:
         # Cargar clientes desde PostgreSQL
         self.cargar_clientes()
 
+    
+# Pantalla de consulta de órdenes
+    
+# Pantalla de consulta de órdenes
+    
+
+    
+    def mostrar_ordenes(self):
+
+        self.limpiar_contenido()
+        self.crear_encabezado("Gestión de Órdenes")
+
+        panel = tk.Frame(
+            self.contenido,
+            bg=self.COLOR_FONDO
+        )
+
+        panel.pack(
+            fill="both",
+            expand=True,
+            padx=30,
+            pady=25
+        )
+
+        tk.Label(
+            panel,
+            text="Listado de órdenes",
+            font=("Arial", 16, "bold"),
+            bg=self.COLOR_FONDO,
+            fg=self.COLOR_TEXTO
+        ).pack(anchor="w")
+
+        tk.Label(
+            panel,
+            text="Consultá las órdenes registradas y filtrá por cliente o empleado.",
+            font=("Arial", 10),
+            bg=self.COLOR_FONDO,
+            fg="#64748B"
+        ).pack(anchor="w", pady=(5, 20))
+
+        # -------------------------------
+        # FILTROS
+        # -------------------------------
+
+        filtros = tk.Frame(
+            panel,
+            bg=self.COLOR_FONDO
+        )
+
+        filtros.pack(fill="x", pady=(0, 20))
+
+        tk.Label(
+            filtros,
+            text="Cliente:",
+            bg=self.COLOR_FONDO,
+            font=("Arial", 10)
+        ).pack(side="left", padx=(0, 5))
+
+        self.entrada_cliente = tk.Entry(
+            filtros,
+            font=("Arial", 11),
+            width=25
+        )
+
+        self.entrada_cliente.pack(side="left", ipady=7, padx=5)
+
+        tk.Label(
+            filtros,
+            text="Empleado:",
+            bg=self.COLOR_FONDO,
+            font=("Arial", 10)
+        ).pack(side="left", padx=(10, 5))
+
+        self.entrada_empleado = tk.Entry(
+            filtros,
+            font=("Arial", 11),
+            width=25
+        )
+
+        self.entrada_empleado.pack(side="left", ipady=7, padx=5)
+
+        tk.Button(
+            filtros,
+            text="Buscar",
+            bg=self.COLOR_AZUL,
+            fg="white",
+            font=("Arial", 10, "bold"),
+            relief="flat",
+            padx=18,
+            pady=8,
+            cursor="hand2",
+            command=self.buscar_ordenes
+        ).pack(side="left", padx=10)
+
+        tk.Button(
+            filtros,
+            text="Limpiar",
+            font=("Arial", 10),
+            padx=18,
+            pady=8,
+            cursor="hand2",
+            command=self.limpiar_ordenes
+        ).pack(side="left")
+
+        # -------------------------------
+        # TABLA
+        # -------------------------------
+
+        columnas = (
+            "orderid",
+            "customerid",
+            "companyname",
+            "employeeid",
+            "firstname",
+            "lastname",
+            "orderdate",
+            "requireddate",
+            "shippeddate",
+            "shipvia",
+            "freight",
+            "shipname",
+            "shipaddress",
+            "shipcity",
+            "shipregion",
+            "shippostalcode",
+            "shipcountry"
+        )
+
+        contenedor_tabla = tk.Frame(
+            panel,
+            bg=self.COLOR_FONDO
+        )
+
+        contenedor_tabla.pack(
+            fill="both",
+            expand=True,
+            pady=10
+        )
+
+        contenedor_tabla.grid_rowconfigure(0, weight=1)
+        contenedor_tabla.grid_columnconfigure(0, weight=1)
+
+        self.tabla_ordenes = ttk.Treeview(
+            contenedor_tabla,
+            columns=columnas,
+            show="headings"
+        )
+
+        encabezados = {
+            "orderid": "N.º Orden",
+            "customerid": "ID Cliente",
+            "companyname": "Nombre del cliente",
+            "employeeid": "ID Empleado",
+            "firstname": "Nombre empleado",
+            "lastname": "Apellido empleado",
+            "orderdate": "Fecha orden",
+            "requireddate": "Fecha requerida",
+            "shippeddate": "Fecha envío",
+            "shipvia": "Transportista",
+            "freight": "Flete",
+            "shipname": "Destinatario",
+            "shipaddress": "Dirección envío",
+            "shipcity": "Ciudad",
+            "shipregion": "Región",
+            "shippostalcode": "Código postal",
+            "shipcountry": "País"
+        }
+
+        anchos = {
+            "orderid": 90,
+            "customerid": 90,
+            "companyname": 180,
+            "employeeid": 90,
+            "firstname": 120,
+            "lastname": 120,
+            "orderdate": 110,
+            "requireddate": 110,
+            "shippeddate": 110,
+            "shipvia": 100,
+            "freight": 100,
+            "shipname": 180,
+            "shipaddress": 180,
+            "shipcity": 120,
+            "shipregion": 100,
+            "shippostalcode": 110,
+            "shipcountry": 120
+        }
+
+        for columna in columnas:
+
+            self.tabla_ordenes.heading(
+                columna,
+                text=encabezados[columna]
+            )
+
+            self.tabla_ordenes.column(
+                columna,
+                width=anchos[columna],
+                minwidth=80,
+                anchor="center"
+            )
+
+        # Barra vertical
+        scroll_vertical = ttk.Scrollbar(
+            contenedor_tabla,
+            orient="vertical",
+            command=self.tabla_ordenes.yview
+        )
+
+        # Barra horizontal
+        scroll_horizontal = ttk.Scrollbar(
+            contenedor_tabla,
+            orient="horizontal",
+            command=self.tabla_ordenes.xview
+        )
+
+        self.tabla_ordenes.configure(
+            yscrollcommand=scroll_vertical.set,
+            xscrollcommand=scroll_horizontal.set
+        )
+
+        self.tabla_ordenes.grid(
+            row=0,
+            column=0,
+            sticky="nsew"
+        )
+
+        scroll_vertical.grid(
+            row=0,
+            column=1,
+            sticky="ns"
+        )
+
+        scroll_horizontal.grid(
+            row=1,
+            column=0,
+            sticky="ew"
+        )
+
+        # Cargar órdenes
+        self.cargar_ordenes()
+
+
+    # Cargar órdenes
+    def cargar_ordenes(self):
+
+        self.tabla_ordenes.delete(
+            *self.tabla_ordenes.get_children()
+        )
+
+        ordenes = obtener_ordenes()
+
+        if ordenes is None:
+
+            messagebox.showerror(
+                "Error",
+                "No se pudieron cargar las órdenes.\n"
+                "Verificá la conexión con PostgreSQL."
+            )
+
+            return
+
+        for orden in ordenes:
+
+            self.tabla_ordenes.insert(
+                "",
+                "end",
+                values=orden
+            )
+
+
+    # Buscar órdenes
+    
+    def buscar_ordenes(self):
+
+        filtro_cliente = self.entrada_cliente.get().strip()
+        filtro_empleado = self.entrada_empleado.get().strip()
+
+        self.tabla_ordenes.delete(
+            *self.tabla_ordenes.get_children()
+        )
+
+        ordenes = obtener_ordenes(
+            filtro_cliente,
+            filtro_empleado
+        )
+
+        if ordenes is None:
+
+            messagebox.showerror(
+                "Error",
+                "No se pudo realizar la búsqueda de órdenes."
+            )
+
+            return
+
+        for orden in ordenes:
+
+            self.tabla_ordenes.insert(
+                "",
+                "end",
+                values=orden
+            )
+
+
+    # Limpiar filtros
+    
+    def limpiar_ordenes(self):
+
+        self.entrada_cliente.delete(0, tk.END)
+        self.entrada_empleado.delete(0, tk.END)
+
+        self.cargar_ordenes()
+
+
+    
     # Pantalla acerca de
     def mostrar_acerca_de(self):
 
