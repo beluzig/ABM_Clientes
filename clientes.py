@@ -62,7 +62,22 @@ def obtener_clientes(filtro=""):
         conexion.close()
 
 
+
 def insertar_cliente(datos):
+
+    # Limpiar y convertir el ID a mayúsculas
+    customerid = datos[0].strip().upper()
+
+    # Validar que no esté vacío
+    if not customerid:
+        return False, "Debe ingresar un ID de cliente."
+
+    # Validar que contenga solamente letras
+    if not customerid.isalpha():
+        return False, "El ID del cliente solo puede contener letras."
+
+    # Reemplazar el ID original por el ID validado
+    datos = (customerid,) + tuple(datos[1:])
 
     conexion = crear_conexion()
 
@@ -93,7 +108,6 @@ def insertar_cliente(datos):
         cursor.execute(consulta, datos)
 
         conexion.commit()
-
         cursor.close()
 
         return True, None
@@ -105,6 +119,7 @@ def insertar_cliente(datos):
 
     finally:
         conexion.close()
+
 
 def actualizar_cliente(datos, customerid_original):
 
@@ -149,6 +164,7 @@ def actualizar_cliente(datos, customerid_original):
     finally:
         conexion.close()        
 
+
 def eliminar_cliente(customerid):
 
     conexion = crear_conexion()
@@ -164,7 +180,7 @@ def eliminar_cliente(customerid):
             WHERE customerid = %s
         """
 
-        cursor.execute(consulta, (customerid,))
+        cursor.execute(consulta, (str(customerid),))
 
         if cursor.rowcount == 0:
             conexion.rollback()
