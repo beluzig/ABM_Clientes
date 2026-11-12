@@ -11,8 +11,8 @@ def crear_conexion():
             host="localhost",
             database="northwind",
             user="postgres",
-            password=os.getenv("DB_PASSWORD", "TU_CONTRASEÑA"),
-            port="5432"
+            password=os.getenv("DB_PASSWORD", "AuraTeAmo1234"),
+            port="5433"
         )
 
         return conexion

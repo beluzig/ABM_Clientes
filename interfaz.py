@@ -975,68 +975,34 @@ class AplicacionClientes:
 
         # Guardar cliente
         def guardar():
-
             datos = []
-
             for etiqueta, nombre in campos:
                 valor = entradas[nombre].get().strip()
                 datos.append(valor)
 
-            # Validar campos obligatorios
-            if datos[0] == "":
-                messagebox.showwarning(
-                    "Validación",
-                    "El ID del cliente es obligatorio.",
-                    parent=formulario
-                )
-                entradas["customerid"].focus()
-                return
+            # Convertimos el ID a mayúsculas solo si el usuario escribió algo
+            if datos[0] != "":
+                datos[0] = datos[0].upper()
 
-            if datos[1] == "":
-                messagebox.showwarning(
-                    "Validación",
-                    "El nombre de la empresa es obligatorio.",
-                    parent=formulario
-                )
-                entradas["companyname"].focus()
-                return
-
-            # Validar longitud del ID
-            if len(datos[0]) > 5:
-                messagebox.showwarning(
-                    "Validación",
-                    "El ID no puede superar los 5 caracteres.",
-                    parent=formulario
-                )
-                entradas["customerid"].focus()
-                return
-
-            datos[0] = datos[0].upper()
-
-            # Insertar en PostgreSQL
+            # Llamamos directamente a la BD (el trigger hará el resto)
             resultado, error = insertar_cliente(tuple(datos))
 
             if resultado:
-
                 messagebox.showinfo(
                     "Alta exitosa",
                     "El cliente se registró correctamente.",
                     parent=formulario
                 )
-
                 formulario.destroy()
-
-                # Actualizar la tabla
                 self.buscador.delete(0, tk.END)
                 self.cargar_clientes()
-
             else:
-
                 messagebox.showerror(
                     "Error al registrar",
                     "No se pudo guardar el cliente.\n\n" + error,
                     parent=formulario
                 )
+
 
         # Botones
         botones = tk.Frame(
@@ -1180,42 +1146,24 @@ class AplicacionClientes:
 
         # Guardar modificaciones
         def guardar():
-
-            datos = []
+            datos = [customerid]
 
             for etiqueta, nombre in campos:
                 valor = entradas[nombre].get().strip()
                 datos.append(valor)
 
-            if datos[0] == "":
-                messagebox.showwarning(
-                    "Validación",
-                    "El nombre de la empresa es obligatorio.",
-                    parent=formulario
-                )
-                entradas["companyname"].focus()
-                return
-
-            resultado, error = actualizar_cliente(
-                tuple(datos),
-                customerid
-            )
+            resultado, error = actualizar_cliente(tuple(datos))
 
             if resultado:
-
                 messagebox.showinfo(
                     "Modificación exitosa",
-                    "Los datos del cliente se actualizaron correctamente.",
+                    "El cliente se actualizó correctamente.",
                     parent=formulario
                 )
-
                 formulario.destroy()
-
                 self.buscador.delete(0, tk.END)
                 self.cargar_clientes()
-
             else:
-
                 messagebox.showerror(
                     "Error al modificar",
                     "No se pudo actualizar el cliente.\n\n" + error,
@@ -1288,19 +1236,3 @@ class AplicacionClientes:
             return
 
         resultado, error = eliminar_cliente(customerid)
-
-        if resultado:
-
-            messagebox.showinfo(
-                "Eliminación exitosa",
-                "El cliente fue eliminado correctamente."
-            )
-
-            self.cargar_clientes()
-
-        else:
-
-            messagebox.showerror(
-                "No se pudo eliminar",
-                error
-            ) 

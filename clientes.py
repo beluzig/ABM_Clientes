@@ -63,6 +63,43 @@ def obtener_clientes(filtro=""):
 
 
 
+
+def insertar_cliente(datos):
+    conexion = crear_conexion()
+    if conexion is None:
+        return False, "No se pudo conectar con PostgreSQL."
+    try:
+        cursor = conexion.cursor()
+        consulta = """
+            INSERT INTO customers (
+                customerid, companyname, contactname, contacttitle, 
+                address, city, region, postalcode, country, phone, fax
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(consulta, datos)
+        conexion.commit()
+        cursor.close()
+        return True, "Cliente registrado exitosamente."
+        
+    except Exception as error:
+        conexion.rollback()
+        print("Falla detectada en backend:", type(error), error)
+        
+        # Verificamos si el error viene de PostgreSQL y trae el mensaje del Trigger
+        if isinstance(error, psycopg2.Error) and error.diag and error.diag.message_primary:
+            mensaje = error.diag.message_primary
+        else:
+            # Plan B: Limpiamos el texto de cualquier otro error genérico
+            mensaje = str(error).split('\n')[0].replace("ERROR:  ", "")
+            
+        return False, mensaje
+        
+    finally:
+        conexion.close()
+
+
+
+""""
 def insertar_cliente(datos):
 
     # Limpiar y convertir el ID a mayúsculas
@@ -82,12 +119,12 @@ def insertar_cliente(datos):
     conexion = crear_conexion()
 
     if conexion is None:
-        return False, "No se pudo conectar con PostgreSQL."
+        return False, "No se pudo conectar con PostgresSQL."
 
     try:
         cursor = conexion.cursor()
 
-        consulta = """
+        consulta = ""
             INSERT INTO customers (
                 customerid,
                 companyname,
@@ -103,7 +140,7 @@ def insertar_cliente(datos):
             )
             VALUES (%s, %s, %s, %s, %s, %s,
                     %s, %s, %s, %s, %s)
-        """
+        ""
 
         cursor.execute(consulta, datos)
 
@@ -119,8 +156,34 @@ def insertar_cliente(datos):
 
     finally:
         conexion.close()
+"""
+
+def actualizar_cliente(datos):
+    conexion = crear_conexion()
+
+    if conexion is None:
+        return False, "No se puede conectar con PostgresSQL,"
+    try: 
+        cursor = conexion.cursor()
+        consulta = "SELECT fn_abm_cli('M', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        cursor.execute(consulta,datos)
+        mensaje = cursor.fetchone()[0]
+        conexion.commit()
+        cursor.close()
+        return True, mensaje
+    except Exception as error:
+        conexion.rollback()
+        print("Falla detectada en backend:", type(error), error)
+        if isinstance(error, psycopg2.Error) and error.diag and error.diag.message_primary:
+            mensaje = error.diag.message_primary
+        else:
+            mensaje = str(error).split('\n')[0].replace("ERROR:  ", "")
+        return False, mensaje 
+    finally:
+        conexion.close()
 
 
+"""
 def actualizar_cliente(datos, customerid_original):
 
     conexion = crear_conexion()
@@ -131,7 +194,7 @@ def actualizar_cliente(datos, customerid_original):
     try:
         cursor = conexion.cursor()
 
-        consulta = """
+        consulta = ""
             UPDATE customers
             SET companyname = %s,
                 contactname = %s,
@@ -144,7 +207,7 @@ def actualizar_cliente(datos, customerid_original):
                 phone = %s,
                 fax = %s
             WHERE customerid = %s
-        """
+        ""
 
         cursor.execute(
             consulta,
@@ -163,8 +226,34 @@ def actualizar_cliente(datos, customerid_original):
 
     finally:
         conexion.close()        
+"""
+def eliminar_cliente(customerid):
+    conexion = crear_conexion()
+    if conexion is None:
+        return False, "No se pudo conectar con PostgreSQL."
+    try:
+        cursor = conexion.cursor()
+        consulta = """
+            SELECT fn_abm_cli(
+                'B', %s, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+            )
+        """
+        cursor.execute(consulta, (customerid,))
+        mensaje = cursor.fetchone()[0]
+        conexion.commit()
+        cursor.close()
+        return True, mensaje
+    except Exception as error:
+        conexion.rollback()
+        if error.diag and error.diag.message_primary:
+            mensaje = error.diag.message_primary
+        else:
+            mensaje = str(error).split('\n')[0]
+        return False, mensaje      
+    finally:
+        conexion.close()
 
-
+"""
 def eliminar_cliente(customerid):
 
     conexion = crear_conexion()
@@ -175,10 +264,10 @@ def eliminar_cliente(customerid):
     try:
         cursor = conexion.cursor()
 
-        consulta = """
+        consulta = ""
             DELETE FROM customers
             WHERE customerid = %s
-        """
+        ""
 
         cursor.execute(consulta, (str(customerid),))
 
@@ -210,3 +299,4 @@ def eliminar_cliente(customerid):
 
     finally:
         conexion.close()
+"""
