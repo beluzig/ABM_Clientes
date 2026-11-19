@@ -113,6 +113,3 @@ before delete
 on customers
 for each row 
 execute function tr_delete_customer();
-
-DROP TRIGGER IF EXISTS tr_customers_del ON customers;
-drop function tr_delete_customer
