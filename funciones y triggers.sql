@@ -1,4 +1,13 @@
-//Funcion ABM 
+DROP TRIGGER IF EXISTS tr_customers_before ON customers;
+DROP TRIGGER IF EXISTS tr_customers_del ON customers;
+
+DROP FUNCTION IF EXISTS tr_valid_customer();
+DROP FUNCTION IF EXISTS tr_delete_customer();
+DROP FUNCTION IF EXISTS fn_abm_cli(
+    text, text, text, text, text, text, text, text, text, text, text, text
+);
+
+--Funcion ABM 
 create or replace function fn_abm_cli(
 	accion text, 
     id text, 
@@ -20,7 +29,7 @@ begin
 	end if;
 	
 	if length(id)>5 then
-		raise exception 'El ID del cliente no puede tenear más de 5 caracteres.';
+		raise exception 'El ID del cliente no puede tener más de 5 caracteres.';
 	end if;
 	
 	if accion = 'A' then
@@ -41,11 +50,19 @@ end;
 $$
 language plpgsql;
 
-drop function fn_abm_cli
-
 create or replace function tr_valid_customer()
 returns trigger as $$ 
 begin
+
+	if TG_OP = 'INSERT' then
+		if exists (
+			select 1 
+			from customers 
+			where customerid = new.customerid
+		) then
+			raise exception 'Ya existe un cliente con el ID %.', new.customerid;
+    	end if;
+	end if;
 
 	if new.customerid is null or trim(new.customerid)='' then
 		raise exception 'El ID es obligatorio';
@@ -55,7 +72,7 @@ begin
 		raise exception 'El nombre de la empresa es obligatorio';
 	end if;
 	
-	if new.customerid !~ '^[a-zA-Z]+$' then
+	if trim(new.customerid) !~ '^[a-zA-Z]+$' then
 		raise exception 'El ID debe contener únicamente letras';
 	end if;
 	

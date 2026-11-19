@@ -976,21 +976,18 @@ class AplicacionClientes:
         # Guardar cliente
         def guardar():
             datos = []
+            
             for etiqueta, nombre in campos:
                 valor = entradas[nombre].get().strip()
                 datos.append(valor)
 
-            # Convertimos el ID a mayúsculas solo si el usuario escribió algo
-            if datos[0] != "":
-                datos[0] = datos[0].upper()
-
             # Llamamos directamente a la BD (el trigger hará el resto)
-            resultado, error = insertar_cliente(tuple(datos))
+            resultado, mensaje = insertar_cliente(tuple(datos))
 
             if resultado:
                 messagebox.showinfo(
                     "Alta exitosa",
-                    "El cliente se registró correctamente.",
+                    mensaje,
                     parent=formulario
                 )
                 formulario.destroy()
@@ -999,7 +996,7 @@ class AplicacionClientes:
             else:
                 messagebox.showerror(
                     "Error al registrar",
-                    "No se pudo guardar el cliente.\n\n" + error,
+                    "No se pudo guardar el cliente.\n\n" + mensaje,
                     parent=formulario
                 )
 
@@ -1152,12 +1149,12 @@ class AplicacionClientes:
                 valor = entradas[nombre].get().strip()
                 datos.append(valor)
 
-            resultado, error = actualizar_cliente(tuple(datos))
+            resultado, mensaje = actualizar_cliente(tuple(datos))
 
             if resultado:
                 messagebox.showinfo(
                     "Modificación exitosa",
-                    "El cliente se actualizó correctamente.",
+                    mensaje,
                     parent=formulario
                 )
                 formulario.destroy()
@@ -1166,7 +1163,7 @@ class AplicacionClientes:
             else:
                 messagebox.showerror(
                     "Error al modificar",
-                    "No se pudo actualizar el cliente.\n\n" + error,
+                    "No se pudo actualizar el cliente.\n\n" + mensaje,
                     parent=formulario
                 )
 
@@ -1233,6 +1230,22 @@ class AplicacionClientes:
         )
 
         if not confirmar:
-            return
+            return 
 
-        resultado, error = eliminar_cliente(customerid)
+        resultado, mensaje = eliminar_cliente(customerid)
+
+        if resultado:
+            messagebox.showinfo(
+                "Eliminación exitosa",
+                mensaje,
+            )
+            self.buscador.delete(0, tk.END)
+            self.cargar_clientes()
+        else:
+            messagebox.showerror(
+                "Error al eliminar",
+                "No se pudo eiminar el cliente.\n\n" + mensaje,
+            )
+    
+
+        

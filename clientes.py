@@ -70,17 +70,12 @@ def insertar_cliente(datos):
         return False, "No se pudo conectar con PostgreSQL."
     try:
         cursor = conexion.cursor()
-        consulta = """
-            INSERT INTO customers (
-                customerid, companyname, contactname, contacttitle, 
-                address, city, region, postalcode, country, phone, fax
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
+        consulta = "SELECT fn_abm_cli('A', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
         cursor.execute(consulta, datos)
+        mensaje = cursor.fetchone()[0]
         conexion.commit()
         cursor.close()
-        return True, "Cliente registrado exitosamente."
-        
+        return True, mensaje
     except Exception as error:
         conexion.rollback()
         print("Falla detectada en backend:", type(error), error)
@@ -173,11 +168,10 @@ def actualizar_cliente(datos):
         return True, mensaje
     except Exception as error:
         conexion.rollback()
-        print("Falla detectada en backend:", type(error), error)
-        if isinstance(error, psycopg2.Error) and error.diag and error.diag.message_primary:
+        if error.diag and error.diag.message_primary:
             mensaje = error.diag.message_primary
         else:
-            mensaje = str(error).split('\n')[0].replace("ERROR:  ", "")
+            mensaje = str(error).split('\n')[0]
         return False, mensaje 
     finally:
         conexion.close()
