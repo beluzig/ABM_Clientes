@@ -1,7 +1,7 @@
 import psycopg2
 
 from conexion import crear_conexion
-
+from logs import registrar_log, registrar_notice, registrar_notices
 
 def obtener_clientes(filtro=""):
 
@@ -39,26 +39,48 @@ def obtener_clientes(filtro=""):
 
             parametro = "%" + filtro + "%"
 
+            parametros = (
+                parametro,
+                parametro,
+                parametro,
+                parametro,
+                parametro
+            )
+
             cursor.execute(
                 consulta,
-                (parametro, parametro, parametro,
-                 parametro, parametro)
+                parametros
             )
 
         else:
+            parametros = None
             cursor.execute(consulta)
 
-        clientes = cursor.fetchall()
+        registrar_log(
+            consulta=consulta,
+            parametros=parametros,
+            origen="Frontend",
+            estado="Ejecutada"
+        )
 
+        clientes = cursor.fetchall()
         cursor.close()
 
         return clientes
 
     except Exception as error:
         print("Error al consultar clientes:", error)
+        registrar_log(
+            consulta=consulta,
+            parametros=locals().get("parametros"),
+            origen="Frontend",
+            estado="Error",
+            error=error
+        )
         return None
 
     finally:
+        registrar_notices(conexion)
         conexion.close()
 
 
@@ -74,10 +96,23 @@ def insertar_cliente(datos):
         cursor.execute(consulta, datos)
         mensaje = cursor.fetchone()[0]
         conexion.commit()
+        registrar_log(
+            consulta=consulta,
+            parametros=datos,
+            origen="Frontend",
+            estado="Ejecutada"
+        )
         cursor.close()
         return True, mensaje
     except Exception as error:
         conexion.rollback()
+        registrar_log(
+            consulta=consulta,
+            parametros=datos,
+            origen="Frontend",
+            estado="Error",
+            error=error
+        )
         print("Falla detectada en backend:", type(error), error)
         
         # Verificamos si el error viene de PostgreSQL y trae el mensaje del Trigger
@@ -90,6 +125,7 @@ def insertar_cliente(datos):
         return False, mensaje
         
     finally:
+        registrar_notices(conexion)
         conexion.close()
 
 
@@ -164,16 +200,30 @@ def actualizar_cliente(datos):
         cursor.execute(consulta,datos)
         mensaje = cursor.fetchone()[0]
         conexion.commit()
+        registrar_log(
+            consulta=consulta,
+            parametros=datos,
+            origen="Frontend",
+            estado="Ejecutada"
+        )
         cursor.close()
         return True, mensaje
     except Exception as error:
         conexion.rollback()
+        registrar_log(
+            consulta=consulta,
+            parametros=datos,
+            origen="Frontend",
+            estado="Error",
+            error=error
+        )
         if error.diag and error.diag.message_primary:
             mensaje = error.diag.message_primary
         else:
             mensaje = str(error).split('\n')[0]
         return False, mensaje 
     finally:
+        registrar_notices(conexion)
         conexion.close()
 
 
@@ -232,19 +282,34 @@ def eliminar_cliente(customerid):
                 'B', %s, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
             )
         """
-        cursor.execute(consulta, (customerid,))
+        parametros = (customerid,)
+        cursor.execute(consulta, parametros)
         mensaje = cursor.fetchone()[0]
         conexion.commit()
+        registrar_log(
+            consulta=consulta,
+            parametros=parametros,
+            origen="Frontend",
+            estado="Ejecutada"
+        )
         cursor.close()
         return True, mensaje
     except Exception as error:
         conexion.rollback()
+        registrar_log(
+            consulta=consulta,
+            parametros=parametros,
+            origen="Frontend",
+            estado="Error",
+            error=error
+        )
         if error.diag and error.diag.message_primary:
             mensaje = error.diag.message_primary
         else:
             mensaje = str(error).split('\n')[0]
         return False, mensaje      
     finally:
+        registrar_notices(conexion)
         conexion.close()
 
 """

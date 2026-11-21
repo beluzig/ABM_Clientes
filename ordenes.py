@@ -78,6 +78,13 @@ def obtener_ordenes(filtro_cliente="", filtro_empleado=""):
 
         cursor.execute(consulta, parametros)
 
+        registrar_log(
+            consulta=consulta,
+            parametros=parametros,
+            origen="Frontend",
+            estado="Ejecutada"
+        )
+
         ordenes = cursor.fetchall()
 
         cursor.close()
@@ -87,6 +94,13 @@ def obtener_ordenes(filtro_cliente="", filtro_empleado=""):
     except Exception as error:
 
         print("Error al consultar órdenes:", error)
+        registrar_log(
+            consulta=consulta,
+            parametros=locals().get("parametros"),
+            origen="Frontend",
+            estado="Error",
+            error=error
+        )
         return None
 
     finally:
