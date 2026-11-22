@@ -36,48 +36,6 @@ def registrar_log(consulta, parametros=None, origen="Frontend", estado="Ejecutad
     with _bloqueo:
         _registros.append(registro)
 
-"""
-def registrar_notice(mensaje):
-    #Registra un NOTICE de PostgreSQL marcado con el prefijo SQL_LOG:.
-    if not mensaje:
-        return
-
-    mensaje = str(mensaje).strip()
-    prefijo = "SQL_LOG:"
-
-    if not mensaje.startswith(prefijo):
-        return
-
-    consulta = mensaje[len(prefijo):].strip()
-    if consulta:
-        registrar_log(
-            consulta=consulta,
-            origen="Backend",
-            estado="Ejecutada",
-        )
-
-def registrar_notices(conexion):
-
-    if conexion is None:
-        return
-
-    try:
-        # psycopg2 agrega los NOTICE recibidos a esta lista.
-        for notice in conexion.notices:
-            # El mensaje suele incluir "NOTICE:" antes del texto enviado
-            # mediante RAISE NOTICE. Extraemos el marcador que nos interesa.
-            marcador = "SQL_LOG:"
-            posicion = notice.find(marcador)
-
-            if posicion != -1:
-                registrar_notice(notice[posicion:])
-
-        # Evita volver a procesar los mismos mensajes.
-        conexion.notices.clear()
-
-    except Exception as error:
-        print("No se pudieron recuperar los NOTICE de PostgreSQL:", error)
-"""
 def registrar_notice(notice):
     marcador = "SQL_LOG:"
     if not notice or marcador not in notice:
