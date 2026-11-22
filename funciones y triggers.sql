@@ -33,15 +33,32 @@ begin
 	end if;
 	
 	if accion = 'A' then
+		RAISE NOTICE 'SQL_LOG: %',
+      format(
+        'INSERT INTO customers(customerid, companyname, contactname, contacttitle, address, city, region, postalcode, country, phone, fax) VALUES (%L, %L, %L, %L, %L, %L, %L, %L, %L, %L, %L)',
+        id, nombre, contacto, titulo, direccion, ciudad,
+        p_region, codp, pais, telefono, p_fax
+      );
 		insert into customers(customerid, companyname, contactname, contacttitle, address, city, region, postalcode, country, phone, fax)
 		values(id,nombre,contacto,titulo,direccion,ciudad,p_region,codp,pais,telefono,p_fax);
 		return 'El cliente se creo correctamente.';
 	elsif accion = 'M' then
+	  RAISE NOTICE 'SQL_LOG: %',
+      format(
+        'UPDATE customers SET companyname = %L, contactname = %L, contacttitle = %L, address = %L, city = %L, region = %L, postalcode = %L, country = %L, phone = %L, fax = %L WHERE customerid = %L',
+        nombre, contacto, titulo, direccion, ciudad,
+        p_region, codp, pais, telefono, p_fax, id
+      );
 		update customers
 		SET companyname = nombre, contactname = contacto, contacttitle = titulo, address = direccion, city = ciudad, region = p_region, postalcode = codp, country = pais, phone = telefono, fax = p_fax
 		where customerid = id;
 		return 'Cliente actualizado exitosamente.';
 	elsif accion = 'B' then
+		RAISE NOTICE 'SQL_LOG: %',
+      format(
+        'DELETE FROM customers WHERE customerid = %L',
+        id
+      );
 		delete from customers
 		where customerid = id;
 		return 'Cliente eliminado correctamente';
@@ -55,6 +72,12 @@ returns trigger as $$
 begin
 
 	if TG_OP = 'INSERT' then
+		RAISE NOTICE 'SQL_LOG: %',
+      format(
+        'SELECT 1 FROM customers WHERE customerid = %L',
+        NEW.customerid
+      );
+
 		if exists (
 			select 1 
 			from customers 
@@ -96,6 +119,12 @@ returns trigger AS $$
 declare
 	v_cant int;
 begin
+		RAISE NOTICE 'SQL_LOG: %',
+      format(
+        'SELECT COUNT(*) FROM orders WHERE customerid = %L',
+        OLD.customerid
+      );
+
    	select count(*) into v_cant
    	from orders
    	where customerid = old.customerid;

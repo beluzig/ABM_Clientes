@@ -2,7 +2,6 @@ import tkinter as tk
 import ordenes
 
 from tkinter import ttk, messagebox
-
 from ordenes import obtener_ordenes
 
 from clientes import (
@@ -12,6 +11,7 @@ from clientes import (
     eliminar_cliente
 )
 
+from logs import obtener_logs, limpiar_logs
 
 class AplicacionClientes:
 
@@ -111,6 +111,22 @@ class AplicacionClientes:
             pady=14,
             cursor="hand2",
             command=self.mostrar_ordenes
+        ).pack(fill="x", padx=10, pady=3)
+
+        tk.Button(
+            menu,
+            text="    Logs",
+            font=("Arial", 11),
+            bg=self.COLOR_MENU,
+            fg="white",
+            activebackground="#334155",
+            activeforeground="white",
+            relief="flat",
+            anchor="w",
+            padx=20,
+            pady=14,
+            cursor="hand2",
+            command=self.mostrar_logs
         ).pack(fill="x", padx=10, pady=3)
         
         tk.Button(
@@ -1247,6 +1263,430 @@ class AplicacionClientes:
                 "Error al eliminar",
                 "No se pudo eiminar el cliente.\n\n" + mensaje,
             )
-    
 
-        
+#######################################################################################
+#############################   LOGS ##################################################
+#######################################################################################
+    def mostrar_logs(self):
+        self.limpiar_contenido()
+        self.crear_encabezado("Historial de Consultas")
+
+        panel = tk.Frame(
+            self.contenido,
+            bg=self.COLOR_FONDO
+        )
+
+        panel.pack(
+            fill="both",
+            expand=True,
+            padx=30,
+            pady=25
+        )
+
+        tk.Label(
+            panel,
+            text="Registro de consultas SQL",
+            font=("Arial", 16, "bold"),
+            bg=self.COLOR_FONDO,
+            fg=self.COLOR_TEXTO
+        ).pack(anchor="w")
+
+        tk.Label(
+            panel,
+            text="Consultá las sentencias ejecutadas desde el Frontend y el Backend.",
+            font=("Arial", 10),
+            bg=self.COLOR_FONDO,
+            fg="#64748B"
+        ).pack(anchor="w", pady=(5, 20))
+
+        # -------------------------------
+        # BOTONES
+        # -------------------------------
+
+        acciones = tk.Frame(
+            panel,
+            bg=self.COLOR_FONDO
+        )
+
+        acciones.pack(fill="x", pady=(0, 15))
+
+        tk.Button(
+            acciones,
+            text="Actualizar",
+            bg=self.COLOR_AZUL,
+            fg="white",
+            font=("Arial", 10, "bold"),
+            relief="flat",
+            padx=18,
+            pady=8,
+            cursor="hand2",
+            command=self.cargar_logs
+        ).pack(side="left", padx=(0, 10))
+
+        tk.Button(
+            acciones,
+            text="Limpiar historial",
+            bg="#DC2626",
+            fg="white",
+            font=("Arial", 10, "bold"),
+            relief="flat",
+            padx=18,
+            pady=8,
+            cursor="hand2",
+            command=self.limpiar_historial_logs
+        ).pack(side="left")
+
+        # -------------------------------
+        # TABLA
+        # -------------------------------
+
+        columnas = (
+            "fecha_hora",
+            "consulta",
+            "parametros",
+            "origen",
+            "estado",
+            "error"
+        )
+
+        contenedor_tabla = tk.Frame(
+            panel,
+            bg=self.COLOR_FONDO
+        )
+
+        contenedor_tabla.pack(
+            fill="both",
+            expand=True,
+            pady=10
+        )
+
+        contenedor_tabla.grid_rowconfigure(0, weight=1)
+        contenedor_tabla.grid_columnconfigure(0, weight=1)
+
+        self.tabla_logs = ttk.Treeview(
+            contenedor_tabla,
+            columns=columnas,
+            show="headings",
+            height=20
+        )
+
+        encabezados = {
+            "fecha_hora": "Fecha y hora",
+            "consulta": "Consulta SQL",
+            "parametros": "Parámetros",
+            "origen": "Origen",
+            "estado": "Estado",
+            "error": "Error"
+        }
+
+        anchos = {
+            "fecha_hora": 150,
+            "consulta": 600,
+            "parametros": 250,
+            "origen": 100,
+            "estado": 100,
+            "error": 300
+        }
+
+        for columna in columnas:
+
+            self.tabla_logs.heading(
+                columna,
+                text=encabezados[columna]
+            )
+
+            self.tabla_logs.column(
+                columna,
+                width=anchos[columna],
+                minwidth=80,
+                anchor="w" if columna in ("consulta", "parametros", "error") else "center",
+                stretch=False
+            )
+
+        # Colores según el estado de ejecución
+
+        self.tabla_logs.tag_configure(
+            "ejecutada",
+            foreground="#16A34A"
+        )
+
+        self.tabla_logs.tag_configure(
+            "error",
+            foreground="#DC2626"
+        )
+
+        # Barra vertical
+
+        scroll_vertical = ttk.Scrollbar(
+            contenedor_tabla,
+            orient="vertical",
+            command=self.tabla_logs.yview
+        )
+
+        # Barra horizontal
+
+        scroll_horizontal = ttk.Scrollbar(
+            contenedor_tabla,
+            orient="horizontal",
+            command=self.tabla_logs.xview
+        )
+
+        self.tabla_logs.configure(
+            yscrollcommand=scroll_vertical.set,
+            xscrollcommand=scroll_horizontal.set
+        )
+
+        self.tabla_logs.grid(
+            row=0,
+            column=0,
+            sticky="nsew"
+        )
+
+        scroll_vertical.grid(
+            row=0,
+            column=1,
+            sticky="ns"
+        )
+
+        scroll_horizontal.grid(
+            row=1,
+            column=0,
+            sticky="ew"
+        )
+
+        # Doble clic para consultar los detalles completos
+
+        self.tabla_logs.bind(
+            "<Double-1>",
+            self.mostrar_detalle_log
+        )
+
+        # Cargar historial
+
+        self.cargar_logs()
+
+
+    # -------------------------------
+    # CARGAR LOGS
+    # -------------------------------
+
+    def cargar_logs(self):
+        self.tabla_logs.delete(
+            *self.tabla_logs.get_children()
+        )
+
+        registros = obtener_logs()
+
+        if registros is None:
+            messagebox.showerror(
+                "Error",
+                "No se pudieron recuperar los registros."
+            )
+            return
+
+        self.logs_detalle = {}
+
+        for registro in registros:
+
+            estado = registro.get("estado", "")
+
+            consulta_completa = registro.get("consulta", "")
+
+            # Resumir la consulta para mostrarla en la tabla
+            consulta = " ".join(consulta_completa.split())
+
+            if len(consulta) > 150:
+                consulta = consulta[:150] + "..."
+
+            parametros = registro.get("parametros")
+
+            if parametros is None:
+                parametros = ""
+            else:
+                parametros = str(parametros)
+
+            if len(parametros) > 100:
+                parametros = parametros[:100] + "..."
+
+            error = registro.get("error") or ""
+
+            if len(error) > 100:
+                error = error[:100] + "..."
+
+            valores = (
+                registro.get("fecha_hora", ""),
+                consulta,
+                parametros,
+                registro.get("origen", ""),
+                estado,
+                error
+            )
+
+            etiqueta = (
+                "error" if estado == "Error"
+                else "ejecutada"
+            )
+
+            item = self.tabla_logs.insert(
+                "",
+                "end",
+                values=valores,
+                tags=(etiqueta,)
+            )
+
+            self.logs_detalle[item] = registro
+
+
+    # -------------------------------
+    # LIMPIAR HISTORIAL
+    # -------------------------------
+
+    def limpiar_historial_logs(self):
+
+        confirmar = messagebox.askyesno(
+            "Limpiar historial",
+            "¿Estás seguro de que querés eliminar todos los registros?"
+        )
+
+        if not confirmar:
+            return
+
+        limpiar_logs()
+
+        self.cargar_logs()
+
+        messagebox.showinfo(
+            "Historial",
+            "El historial de consultas fue limpiado correctamente."
+        )
+
+
+    # -------------------------------
+    # VER DETALLE DE UN LOG
+    # -------------------------------
+    def mostrar_detalle_log(self, event):
+
+        seleccion = self.tabla_logs.selection()
+
+        if not seleccion:
+            return
+
+        item = seleccion[0]
+
+        registro = self.logs_detalle.get(item)
+
+        if not registro:
+            return
+
+        ventana = tk.Toplevel(self.ventana)
+        ventana.title("Detalle de consulta")
+        ventana.geometry("850x700")
+        ventana.configure(bg=self.COLOR_FONDO)
+        ventana.transient(self.ventana)
+
+        tk.Label(
+            ventana,
+            text="Detalle del registro",
+            font=("Arial", 16, "bold"),
+            bg=self.COLOR_FONDO,
+            fg=self.COLOR_TEXTO
+        ).pack(anchor="w", padx=20, pady=(20, 10))
+
+        # -------------------------------
+        # INFORMACIÓN GENERAL
+        # -------------------------------
+
+        campos = (
+            ("Fecha y hora", registro.get("fecha_hora", "")),
+            ("Origen", registro.get("origen", "")),
+            ("Estado", registro.get("estado", ""))
+        )
+
+        for titulo, contenido in campos:
+
+            tk.Label(
+                ventana,
+                text=f"{titulo}: {contenido}",
+                font=("Arial", 10),
+                bg=self.COLOR_FONDO,
+                fg=self.COLOR_TEXTO
+            ).pack(anchor="w", padx=20, pady=3)
+
+        # -------------------------------
+        # CONSULTA, PARÁMETROS Y ERROR
+        # -------------------------------
+
+        detalles = (
+            ("Consulta SQL", registro.get("consulta", ""), 10),
+            ("Parámetros", str(registro.get("parametros") or ""), 4),
+            ("Error", registro.get("error") or "", 4)
+        )
+
+        for titulo, contenido, altura in detalles:
+
+            tk.Label(
+                ventana,
+                text=titulo,
+                font=("Arial", 10, "bold"),
+                bg=self.COLOR_FONDO,
+                fg=self.COLOR_TEXTO
+            ).pack(anchor="w", padx=20, pady=(12, 3))
+
+            contenedor = tk.Frame(
+                ventana,
+                bg=self.COLOR_FONDO
+            )
+
+            contenedor.pack(
+                fill="both" if titulo == "Consulta SQL" else "x",
+                expand=(titulo == "Consulta SQL"),
+                padx=20
+            )
+
+            cuadro = tk.Text(
+                contenedor,
+                height=altura,
+                font=("Consolas", 9),
+                wrap="none"
+            )
+
+            scroll_vertical = ttk.Scrollbar(
+                contenedor,
+                orient="vertical",
+                command=cuadro.yview
+            )
+
+            scroll_horizontal = ttk.Scrollbar(
+                contenedor,
+                orient="horizontal",
+                command=cuadro.xview
+            )
+
+            cuadro.configure(
+                yscrollcommand=scroll_vertical.set,
+                xscrollcommand=scroll_horizontal.set
+            )
+
+            cuadro.grid(
+                row=0,
+                column=0,
+                sticky="nsew"
+            )
+
+            scroll_vertical.grid(
+                row=0,
+                column=1,
+                sticky="ns"
+            )
+
+            scroll_horizontal.grid(
+                row=1,
+                column=0,
+                sticky="ew"
+            )
+
+            contenedor.grid_rowconfigure(0, weight=1)
+            contenedor.grid_columnconfigure(0, weight=1)
+
+            cuadro.insert("1.0", contenido)
+            cuadro.config(state="disabled")

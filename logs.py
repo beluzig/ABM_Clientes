@@ -36,7 +36,7 @@ def registrar_log(consulta, parametros=None, origen="Frontend", estado="Ejecutad
     with _bloqueo:
         _registros.append(registro)
 
-
+"""
 def registrar_notice(mensaje):
     #Registra un NOTICE de PostgreSQL marcado con el prefijo SQL_LOG:.
     if not mensaje:
@@ -57,7 +57,7 @@ def registrar_notice(mensaje):
         )
 
 def registrar_notices(conexion):
-    """Recupera los NOTICE SQL_LOG enviados por PostgreSQL."""
+
     if conexion is None:
         return
 
@@ -75,6 +75,32 @@ def registrar_notices(conexion):
         # Evita volver a procesar los mismos mensajes.
         conexion.notices.clear()
 
+    except Exception as error:
+        print("No se pudieron recuperar los NOTICE de PostgreSQL:", error)
+"""
+def registrar_notice(notice):
+    marcador = "SQL_LOG:"
+    if not notice or marcador not in notice:
+        return
+    consulta = notice.split(marcador, 1)[1].strip()
+    if consulta:
+        print("NOTICE registrado:", consulta)
+        registrar_log(
+            consulta=consulta,
+            origen="Backend",
+            estado="Ejecutada"
+        )
+
+def registrar_notices(conexion):
+    if conexion is None:
+        return
+    try:
+        # Copiar los mensajes antes de limpiar la lista.
+        notices = list(conexion.notices)
+        for notice in notices:
+            if "SQL_LOG:" in notice:
+                registrar_notice(notice)
+        conexion.notices.clear()
     except Exception as error:
         print("No se pudieron recuperar los NOTICE de PostgreSQL:", error)
 

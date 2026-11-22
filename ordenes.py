@@ -1,5 +1,6 @@
 
 from conexion import crear_conexion
+from logs import registrar_log, registrar_notice, registrar_notices, obtener_logs
 
 
 def obtener_ordenes(filtro_cliente="", filtro_empleado=""):
@@ -104,4 +105,6 @@ def obtener_ordenes(filtro_cliente="", filtro_empleado=""):
         return None
 
     finally:
+        registrar_notices(conexion)
+        print(obtener_logs())
         conexion.close()
