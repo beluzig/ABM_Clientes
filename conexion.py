@@ -12,7 +12,7 @@ def crear_conexion():
             database="northwind",
             user="postgres",
             password=os.getenv("DB_PASSWORD", "CONTRASEÑA_REAL"),
-            #port="5432"
+            #port="5433"
             port="5432"
         )
 
