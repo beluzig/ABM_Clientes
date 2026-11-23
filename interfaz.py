@@ -1,5 +1,6 @@
 import tkinter as tk
 import ordenes
+import platform
 
 from tkinter import ttk, messagebox
 from ordenes import obtener_ordenes
@@ -16,11 +17,11 @@ from logs import obtener_logs, limpiar_logs
 class AplicacionClientes:
 
     def __init__(self, ventana):
-
-        self.ventana = ventana
-
-        self.ventana.title("Northwind - Gestión de Clientes")
-        #self.ventana.state("zoomed") # abre pantalla completa
+        self.ventana = ventana        
+        if platform.system() == "Windows":
+            self.ventana.state("zoomed")
+        else:
+            self.ventana.attributes("-zoomed", True)
         self.ventana.attributes("-zoomed", True)
         self.ventana.minsize(900, 550)
         self.ventana.configure(bg="#F4F6FA")
