@@ -7,6 +7,8 @@ DROP FUNCTION IF EXISTS fn_abm_cli(
     text, text, text, text, text, text, text, text, text, text, text, text
 );
 
+DROP VIEW IF EXISTS vw_ordenes;
+
 --Funcion ABM 
 create or replace function fn_abm_cli(
 	accion text, 
@@ -142,3 +144,31 @@ before delete
 on customers
 for each row 
 execute function tr_delete_customer();
+
+-- 4. Vista de Órdenes (Resuelve JOINs y monto total)
+CREATE OR REPLACE VIEW vw_ordenes AS
+SELECT 
+    o.orderid,
+    o.customerid,
+    c.companyname,
+    o.employeeid,
+    e.firstname,
+    e.lastname,
+    o.orderdate,
+    o.requireddate,
+    o.shippeddate,
+    o.shipvia,
+    o.freight,
+    o.shipname,
+    o.shipaddress,
+    o.shipcity,
+    o.shipregion,
+    o.shippostalcode,
+    o.shipcountry
+FROM orders o
+INNER JOIN customers c ON o.customerid = c.customerid
+INNER JOIN employees e ON o.employeeid = e.employeeid
+INNER JOIN orderdetails od ON o.orderid = od.orderid
+GROUP BY 
+    o.orderid, o.orderdate, o.customerid, c.companyname, 
+    o.employeeid, e.lastname, e.firstname;

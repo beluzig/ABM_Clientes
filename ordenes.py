@@ -15,28 +15,24 @@ def obtener_ordenes(filtro_cliente="", filtro_empleado=""):
 
         consulta = """
             SELECT
-                o.orderid,
-                o.customerid,
-                c.companyname,
-                o.employeeid,
-                e.firstname,
-                e.lastname,
-                o.orderdate,
-                o.requireddate,
-                o.shippeddate,
-                o.shipvia,
-                o.freight,
-                o.shipname,
-                o.shipaddress,
-                o.shipcity,
-                o.shipregion,
-                o.shippostalcode,
-                o.shipcountry
-            FROM orders o
-            INNER JOIN customers c
-                ON o.customerid = c.customerid
-            INNER JOIN employees e
-                ON o.employeeid = e.employeeid
+                orderid,
+                customerid,
+                companyname,
+                employeeid,
+                firstname,
+                lastname,
+                orderdate,
+                requireddate,
+                shippeddate,
+                shipvia,
+                freight,
+                shipname,
+                shipaddress,
+                shipcity,
+                shipregion,
+                shippostalcode,
+                shipcountry
+            FROM vw_ordenes
         """
 
         condiciones = []
@@ -47,12 +43,12 @@ def obtener_ordenes(filtro_cliente="", filtro_empleado=""):
 
             condiciones.append("""
                 (
-                    c.customerid ILIKE %s
-                    OR c.companyname ILIKE %s
+                    customerid ILIKE %s
+                    OR companyname ILIKE %s
                 )
             """)
 
-            parametro_cliente = "%" + filtro_cliente + "%"
+            parametro_cliente = f"%{filtro_cliente}%"
 
             parametros.append(parametro_cliente)
             parametros.append(parametro_cliente)
@@ -62,20 +58,21 @@ def obtener_ordenes(filtro_cliente="", filtro_empleado=""):
 
             condiciones.append("""
                 (
-                    e.lastname ILIKE %s
-                    OR e.firstname ILIKE %s
+                    firstname ILIKE %s
+                    OR lastname ILIKE %s
                 )
             """)
 
-            parametro_empleado = "%" + filtro_empleado + "%"
+            parametro_empleado = f"%{filtro_empleado}%"
 
             parametros.append(parametro_empleado)
             parametros.append(parametro_empleado)
 
+        # Agregar las condiciones si existen filtros
         if condiciones:
             consulta += " WHERE " + " AND ".join(condiciones)
 
-        consulta += " ORDER BY o.orderid"
+        consulta += " ORDER BY orderid"
 
         cursor.execute(consulta, parametros)
 
@@ -95,6 +92,7 @@ def obtener_ordenes(filtro_cliente="", filtro_empleado=""):
     except Exception as error:
 
         print("Error al consultar órdenes:", error)
+
         registrar_log(
             consulta=consulta,
             parametros=locals().get("parametros"),
@@ -102,6 +100,7 @@ def obtener_ordenes(filtro_cliente="", filtro_empleado=""):
             estado="Error",
             error=error
         )
+
         return None
 
     finally:
