@@ -15,23 +15,7 @@ def obtener_ordenes(filtro_cliente="", filtro_empleado=""):
 
         consulta = """
             SELECT
-                orderid,
-                customerid,
-                companyname,
-                employeeid,
-                firstname,
-                lastname,
-                orderdate,
-                requireddate,
-                shippeddate,
-                shipvia,
-                freight,
-                shipname,
-                shipaddress,
-                shipcity,
-                shipregion,
-                shippostalcode,
-                shipcountry
+                *
             FROM vw_ordenes
         """
 
