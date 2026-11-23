@@ -469,8 +469,6 @@ class AplicacionClientes:
     
 # Pantalla de consulta de órdenes
     
-
-    
     def mostrar_ordenes(self):
 
         self.limpiar_contenido()

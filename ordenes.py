@@ -24,40 +24,32 @@ def obtener_ordenes(filtro_cliente="", filtro_empleado=""):
 
         # Filtro por cliente
         if filtro_cliente:
-
             condiciones.append("""
                 (
                     customerid ILIKE %s
                     OR companyname ILIKE %s
                 )
             """)
-
             parametro_cliente = f"%{filtro_cliente}%"
-
             parametros.append(parametro_cliente)
             parametros.append(parametro_cliente)
 
         # Filtro por empleado
         if filtro_empleado:
-
             condiciones.append("""
                 (
                     firstname ILIKE %s
                     OR lastname ILIKE %s
                 )
             """)
-
             parametro_empleado = f"%{filtro_empleado}%"
-
             parametros.append(parametro_empleado)
             parametros.append(parametro_empleado)
 
         # Agregar las condiciones si existen filtros
         if condiciones:
             consulta += " WHERE " + " AND ".join(condiciones)
-
         consulta += " ORDER BY orderid"
-
         cursor.execute(consulta, parametros)
 
         registrar_log(
@@ -66,17 +58,12 @@ def obtener_ordenes(filtro_cliente="", filtro_empleado=""):
             origen="Frontend",
             estado="Ejecutada"
         )
-
         ordenes = cursor.fetchall()
-
         cursor.close()
-
         return ordenes
 
     except Exception as error:
-
         print("Error al consultar órdenes:", error)
-
         registrar_log(
             consulta=consulta,
             parametros=locals().get("parametros"),
@@ -84,7 +71,6 @@ def obtener_ordenes(filtro_cliente="", filtro_empleado=""):
             estado="Error",
             error=error
         )
-
         return None
 
     finally:
