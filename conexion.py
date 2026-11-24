@@ -1,7 +1,4 @@
 import psycopg2
-
-
-import psycopg2
 import os
 
 
@@ -13,7 +10,7 @@ def crear_conexion():
             user="postgres",
             password=os.getenv("DB_PASSWORD", "CONTRASEÑA_REAL"),
             port="5432"
-            #port="5432"
+            
         )
 
         return conexion
