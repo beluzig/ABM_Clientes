@@ -35,18 +35,38 @@ pip install psycopg2-binary
 
 ## Configuración de la conexión
 
-La aplicación utiliza la variable de entorno `DB_PASSWORD` para establecer la conexión con PostgreSQL.
+La aplicación utiliza la variable de entorno `DB_PASSWORD` para obtener la contraseña de acceso a PostgreSQL, evitando almacenarla directamente en el código fuente.
+
+Cada integrante debe configurar esta variable una sola vez en su equipo, utilizando las instrucciones correspondientes a su sistema operativo.
 
 **Windows (PowerShell):**
 
+Ejecutar el siguiente comando, reemplazando `TU_CONTRASEÑA` por la contraseña de PostgreSQL:
+
 ```powershell
-$env:DB_PASSWORD="TU_CONTRASEÑA"
+[Environment]::SetEnvironmentVariable("DB_PASSWORD", "TU_CONTRASEÑA", "User")
 ```
 
-**Linux:**
+Una vez configurada, cerrar y volver a abrir VS Code o la terminal para que los cambios tengan efecto.
+
+**Linux (Bash):**
+
+Abrir el archivo de configuración de Bash:
+
+```bash
+nano ~/.bashrc
+```
+
+Agregar al final del archivo, reemplazando `TU_CONTRASEÑA` por la contraseña de PostgreSQL:
 
 ```bash
 export DB_PASSWORD="TU_CONTRASEÑA"
+```
+
+Guardar los cambios y ejecutar:
+
+```bash
+source ~/.bashrc
 ```
 
 ## Ejecución
