@@ -17,7 +17,8 @@ from logs import obtener_logs, limpiar_logs
 class AplicacionClientes:
 
     def __init__(self, ventana):
-        self.ventana = ventana        
+        self.ventana = ventana
+        self.ventana.title("Northwind - Sistema de Gestión")        
         if platform.system() == "Windows":
             self.ventana.state("zoomed")
         else:
@@ -71,7 +72,7 @@ class AplicacionClientes:
 
         tk.Label(
             menu,
-            text="GESTION DE CLIENTES",
+            text="SISTEMA DE GESTIÓN",
             font=("Arial", 9),
             bg=self.COLOR_MENU,
             fg="#94A3B8"
@@ -128,7 +129,7 @@ class AplicacionClientes:
 
         tk.Button(
             menu,
-            text="    Logs",
+            text="    Registro de actividad",
             font=("Arial", 11),
             bg=self.COLOR_MENU,
             fg="white",
@@ -242,7 +243,7 @@ class AplicacionClientes:
 
         tk.Label(
             panel,
-            text="¡Bienvenido a Northwind!",
+            text="¡Bienvenido al Sistema Northwind!",
             font=("Arial", 23, "bold"),
             bg=self.COLOR_FONDO,
             fg=self.COLOR_TEXTO
@@ -250,7 +251,7 @@ class AplicacionClientes:
 
         tk.Label(
             panel,
-            text="Sistema de gestión de clientes",
+            text="Sistema de gestión y administración de clientes",
             font=("Arial", 13),
             bg=self.COLOR_FONDO,
             fg="#64748B"
@@ -258,12 +259,11 @@ class AplicacionClientes:
 
         tk.Label(
             panel,
-            text="Desde el menú lateral podés acceder al módulo de clientes "
-                 "y administrar su información.",
+            text="Desde el menú lateral podés acceder a los distintos módulos del sistema para consultar y administrar la información.",
             font=("Arial", 11),
             bg=self.COLOR_FONDO,
             fg=self.COLOR_TEXTO,
-            wraplength=650,
+            wraplength=1050,
             justify="left"
         ).pack(anchor="w", pady=(25, 0))
 
@@ -271,7 +271,7 @@ class AplicacionClientes:
     def mostrar_clientes(self):
 
         self.limpiar_contenido()
-        self.crear_encabezado("Administración de clientes")
+        self.crear_encabezado("Gestión de clientes")
 
         panel = tk.Frame(
             self.contenido,
@@ -287,7 +287,7 @@ class AplicacionClientes:
 
         tk.Label(
             panel,
-            text="Listado de clientes",
+            text="Clientes registrados",
             font=("Arial", 16, "bold"),
             bg=self.COLOR_FONDO,
             fg=self.COLOR_TEXTO
@@ -295,7 +295,7 @@ class AplicacionClientes:
 
         tk.Label(
             panel,
-            text="Consulta, registra y administra los clientes de Northwind.",
+            text="Consultá, registrá, modificá y eliminá información de los clientes.",
             font=("Arial", 10),
             bg=self.COLOR_FONDO,
             fg="#64748B"
@@ -485,7 +485,7 @@ class AplicacionClientes:
     def mostrar_ordenes(self):
 
         self.limpiar_contenido()
-        self.crear_encabezado("Gestión de Órdenes")
+        self.crear_encabezado("Consulta de Órdenes")
 
         panel = tk.Frame(
             self.contenido,
@@ -501,7 +501,7 @@ class AplicacionClientes:
 
         tk.Label(
             panel,
-            text="Listado de órdenes",
+            text="Órdenes registradas",
             font=("Arial", 16, "bold"),
             bg=self.COLOR_FONDO,
             fg=self.COLOR_TEXTO
@@ -509,7 +509,7 @@ class AplicacionClientes:
 
         tk.Label(
             panel,
-            text="Consultá las órdenes registradas y filtrá por cliente o empleado.",
+            text="Consultá las órdenes del sistema y filtrá los resultados por cliente y/o empleado.",
             font=("Arial", 10),
             bg=self.COLOR_FONDO,
             fg="#64748B"
@@ -571,7 +571,7 @@ class AplicacionClientes:
 
         tk.Button(
             filtros,
-            text="Limpiar",
+            text="Limpiar filtros",
             font=("Arial", 10),
             padx=18,
             pady=8,
@@ -811,7 +811,7 @@ class AplicacionClientes:
 
         tk.Label(
             panel,
-            text="Northwind - Gestión de Clientes",
+            text="Northwind - Sistema de Gestión",
             font=("Arial", 19, "bold"),
             bg=self.COLOR_FONDO,
             fg=self.COLOR_TEXTO
@@ -819,8 +819,8 @@ class AplicacionClientes:
 
         tk.Label(
             panel,
-            text="Sistema de administración de clientes desarrollado "
-                 "como trabajo práctico integrador.",
+            text="Aplicación de escritorio desarrollada como parte de un trabajo práctico integrador para la materia Programación Avanzada de Bases de Datos."
+                 "para la gestión y consulta de información de clientes y órdenes.",
             font=("Arial", 11),
             bg=self.COLOR_FONDO,
             fg="#64748B",
@@ -831,7 +831,7 @@ class AplicacionClientes:
         
         tk.Label(
                     panel,
-                    text="Tecnologías utilizadas:",
+                    text="Tecnologías utilizadas",
                     font=("Arial", 12, "bold"),
                     bg=self.COLOR_FONDO,
                     fg=self.COLOR_TEXTO
@@ -848,7 +848,7 @@ class AplicacionClientes:
 
         tk.Label(
                     panel,
-                    text="Desarrollado por:",
+                    text="Desarrollado por",
                     font=("Arial", 12, "bold"),
                     bg=self.COLOR_FONDO,
                     fg=self.COLOR_TEXTO
@@ -856,7 +856,7 @@ class AplicacionClientes:
         
         tk.Label(
                     panel,
-                    text="• Samuel\n• Daniela\n• Joaquín\n• Belén",
+                    text="• Daniela Susana Acosta\n• Angel Samuel Rodriguez Parodi\n• Jorge Joaquin Rojas\n• María Belén Soria Zigarán",
                     font=("Arial", 11),
                     bg=self.COLOR_FONDO,
                     fg=self.COLOR_TEXTO,
@@ -1073,7 +1073,7 @@ class AplicacionClientes:
         if not seleccionado:
             messagebox.showwarning(
                 "Seleccionar cliente",
-                "Primero seleccioná un cliente de la tabla."
+                "Seleccioná un cliente de la tabla para continuar."
             )
             return
 
@@ -1250,7 +1250,7 @@ class AplicacionClientes:
         empresa = valores[1]
 
         confirmar = messagebox.askyesno(
-            "Confirmar eliminación",
+            "Confirmar eliminación de cliente",
             "¿Estás seguro de que querés eliminar este cliente?\n\n"
             "ID: " + str(customerid) + "\n"
             "Empresa: " + str(empresa),
@@ -1272,7 +1272,7 @@ class AplicacionClientes:
         else:
             messagebox.showerror(
                 "Error al eliminar",
-                "No se pudo eiminar el cliente.\n\n" + mensaje,
+                "No se pudo eliminar el cliente.\n\n" + mensaje,
             )
 
 #######################################################################################
@@ -1280,7 +1280,7 @@ class AplicacionClientes:
 #######################################################################################
     def mostrar_logs(self):
         self.limpiar_contenido()
-        self.crear_encabezado("Historial de Consultas")
+        self.crear_encabezado("Registro de Actividad")
 
         panel = tk.Frame(
             self.contenido,
@@ -1296,7 +1296,7 @@ class AplicacionClientes:
 
         tk.Label(
             panel,
-            text="Registro de consultas SQL",
+            text="Historial de consultas SQL",
             font=("Arial", 16, "bold"),
             bg=self.COLOR_FONDO,
             fg=self.COLOR_TEXTO
