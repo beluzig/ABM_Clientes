@@ -3,6 +3,7 @@ import psycopg2
 from conexion import crear_conexion
 from logs import registrar_log, registrar_notice, registrar_notices
 
+
 def obtener_clientes(filtro=""):
 
     conexion = crear_conexion()
@@ -28,6 +29,8 @@ def obtener_clientes(filtro=""):
             FROM customers
         """
 
+        parametros = None
+
         if filtro:
             consulta += """
                 WHERE customerid ILIKE %s
@@ -47,14 +50,12 @@ def obtener_clientes(filtro=""):
                 parametro
             )
 
-            cursor.execute(
-                consulta,
-                parametros
-            )
+            cursor.execute(consulta + " ORDER BY companyname ASC, customerid ASC", parametros)
 
         else:
-            parametros = None
-            cursor.execute(consulta)
+            cursor.execute(
+                consulta + " ORDER BY companyname ASC, customerid ASC"
+            )
 
         registrar_log(
             consulta=consulta,
@@ -70,18 +71,21 @@ def obtener_clientes(filtro=""):
 
     except Exception as error:
         print("Error al consultar clientes:", error)
+
         registrar_log(
             consulta=consulta,
-            parametros=locals().get("parametros"),
+            parametros=parametros,
             origen="Frontend",
             estado="Error",
             error=error
         )
+
         return None
 
     finally:
         registrar_notices(conexion)
         conexion.close()
+
 
 
 
