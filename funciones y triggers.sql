@@ -30,8 +30,8 @@ begin
 		raise exception 'Accion invalida: %',accion;
 	end if;
 	
-	if length(id)>5 then
-		raise exception 'El ID del cliente no puede tener más de 5 caracteres.';
+	if accion in ('A','M') and id is not null and length(trim(id))>5 then
+		raise exception 'El ID del CLIENTE debe tener exactamente 5 letras';
 	end if;
 	
 	if accion = 'A' then
@@ -88,6 +88,10 @@ begin
 			raise exception 'Ya existe un cliente con el ID %.', new.customerid;
     	end if;
 	end if;
+
+	if length(trim(new.customerid)) <> 5 then
+        RAISE EXCEPTION 'El ID del cliente debe tener exactamente 5 letras';
+    end if;
 
 	if new.customerid is null or trim(new.customerid)='' then
 		raise exception 'El ID es obligatorio';
