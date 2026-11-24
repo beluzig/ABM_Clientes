@@ -22,9 +22,21 @@ class AplicacionClientes:
             self.ventana.state("zoomed")
         else:
             self.ventana.attributes("-zoomed", True)
-        self.ventana.attributes("-zoomed", True)
-        self.ventana.minsize(900, 550)
-        self.ventana.configure(bg="#F4F6FA")
+        
+        # Ajustar la ventana según el sistema operativo
+        
+        sistema = platform.system()
+
+        try:
+            if sistema == "Windows":
+                self.ventana.state("zoomed")
+            elif sistema == "Linux":
+                self.ventana.attributes("-zoomed", True)
+            elif sistema == "Darwin":
+                self.ventana.state("zoomed")
+        except Exception:
+            self.ventana.geometry("1200x700")
+
 
         # Colores
         self.COLOR_MENU = "#1E293B"
