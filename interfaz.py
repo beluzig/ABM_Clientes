@@ -378,6 +378,8 @@ class AplicacionClientes:
         boton_eliminar.pack(side="right", padx=10)
 
         # Tabla de clientes
+        
+        # Tabla de clientes
         columnas = (
             "customerid",
             "companyname",
@@ -392,8 +394,22 @@ class AplicacionClientes:
             "fax"
         )
 
-        self.tabla = ttk.Treeview(
+        contenedor_tabla = tk.Frame(
             panel,
+            bg=self.COLOR_FONDO
+        )
+
+        contenedor_tabla.pack(
+            fill="both",
+            expand=True,
+            pady=10
+        )
+
+        contenedor_tabla.grid_rowconfigure(0, weight=1)
+        contenedor_tabla.grid_columnconfigure(0, weight=1)
+
+        self.tabla = ttk.Treeview(
+            contenedor_tabla,
             columns=columnas,
             show="headings"
         )
@@ -440,15 +456,16 @@ class AplicacionClientes:
                 anchor="center"
             )
 
-        # Barras de desplazamiento
+        # Barra vertical
         scroll_vertical = ttk.Scrollbar(
-            panel,
+            contenedor_tabla,
             orient="vertical",
             command=self.tabla.yview
         )
 
+        # Barra horizontal
         scroll_horizontal = ttk.Scrollbar(
-            panel,
+            contenedor_tabla,
             orient="horizontal",
             command=self.tabla.xview
         )
@@ -458,21 +475,27 @@ class AplicacionClientes:
             xscrollcommand=scroll_horizontal.set
         )
 
-        self.tabla.pack(
-            side="top",
-            fill="both",
-            expand=True
+        self.tabla.grid(
+            row=0,
+            column=0,
+            sticky="nsew"
         )
 
-        scroll_vertical.pack(
-            side="right",
-            fill="y"
+        scroll_vertical.grid(
+            row=0,
+            column=1,
+            sticky="ns"
         )
 
-        scroll_horizontal.pack(
-            side="bottom",
-            fill="x"
+        scroll_horizontal.grid(
+            row=1,
+            column=0,
+            sticky="ew"
         )
+
+        # Cargar clientes desde PostgreSQL
+        self.cargar_clientes()
+
 
         # Cargar clientes desde PostgreSQL
         self.cargar_clientes()
