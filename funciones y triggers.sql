@@ -52,7 +52,7 @@ begin
         p_region, codp, pais, telefono, p_fax, id
       );
 		update customers
-		SET companyname = nombre, contactname = contacto, contacttitle = titulo, address = direccion, city = ciudad, region = p_region, postalcode = codp, country = pais, phone = telefono, fax = p_fax
+		set companyname = nombre, contactname = contacto, contacttitle = titulo, address = direccion, city = ciudad, region = p_region, postalcode = codp, country = pais, phone = telefono, fax = p_fax
 		where customerid = id;
 		return 'Cliente actualizado exitosamente.';
 	elsif accion = 'B' then
@@ -107,7 +107,7 @@ begin
 	
 	if new.customerid <> upper(new.customerid) then
     	raise exception 'El ID debe estar en mayúsculas';
-	END IF;   
+	end if;   
 	
 	return new;
 end;
@@ -140,8 +140,8 @@ begin
    	end if;
    	
    	return old;
-END;
-$$ LANGUAGE plpgsql;
+end;
+$$ language plpgsql;
 
 create trigger tr_customers_del
 before delete
